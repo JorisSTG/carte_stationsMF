@@ -25,7 +25,7 @@ layer = pdk.Layer(
     "ScatterplotLayer",
     data=df_map,
     get_position='[longitude, latitude]',
-    get_radius=500,
+    get_radius=1000,
     get_fill_color=[200, 30, 0, 160],
     pickable=True,
 )
