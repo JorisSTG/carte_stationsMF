@@ -91,4 +91,4 @@ deck = pdk.Deck(
     tooltip=tooltip,
 )
 
-st.pydeck_chart(deck, height = 1000)
+st.pydeck_chart(deck, height = 800)
