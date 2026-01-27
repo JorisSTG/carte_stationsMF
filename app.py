@@ -4,7 +4,7 @@ import pydeck as pdk
 
 st.set_page_config(page_title="Carte des stations", layout="wide")
 
-st.title("🗺️ Carte des stations en France")
+st.title("🗺️ Carte des stations du réseau Météo-France 🗺️")
 
 # Charger le CSV depuis le repo GitHub
 df = pd.read_csv("stations-meteo-france.csv")
