@@ -14,14 +14,14 @@ TYPICAL_FILE = Path("stations_typiques_coordonnees.csv")       # CSV stations ty
 # ---------- CHOIX DU MODE ----------
 mode = st.selectbox(
     "Afficher :",
-    ["Année spécifique", "Stations typiques", "Toutes les stations"]
+    ["Année", "Typique", "Toutes les stations"]
 )
 
 # ---------- CHARGEMENT DU CSV ----------
-if mode == "Année spécifique":
+if mode == "Année":
     year = st.selectbox("Choisir l'année :", options=list(range(2000, 2020)))
     csv_file = BASE_DIR / f"stations_{year}.csv"
-elif mode == "Stations typiques":
+elif mode == "Typiques":
     csv_file = TYPICAL_FILE
 else:  # Toutes les stations
     csv_file = ALL_STATIONS_FILE
