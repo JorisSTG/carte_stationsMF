@@ -1,41 +1,38 @@
 import streamlit as st
 import pandas as pd
 import pydeck as pdk
+from pathlib import Path
 
-st.set_page_config(page_title="Carte des stations", layout="wide")
+st.set_page_config(page_title="Carte des stations par année", layout="wide")
 
-st.title("🗺️ Carte des stations du réseau Météo-France")
+st.title("🗺️ Carte des stations Météo-France par année")
 
-# ---------- CHOIX DU FICHIER ----------
-csv_option = st.selectbox(
-    "Choisir le fichier des stations à afficher :",
-    ["Toutes les stations", "Stations typiques"]
+# ---------- CONFIG ----------
+OUTPUT_DIR = Path("sortie_par_annee")
+
+# ---------- CHOIX DE L'ANNÉE ----------
+year = st.selectbox(
+    "Choisir l'année à afficher :",
+    options=list(range(2000, 2020))
 )
 
-if csv_option == "Toutes les stations":
-    CSV_FILE = "stations_fichiers_coordonnees.csv"
-    df = pd.read_csv(CSV_FILE, sep=",", encoding="utf-8", low_memory=False)
-    df_map = pd.DataFrame({
-        "identifiant": df["id"],
-        "nom": df["station"],
-        "longitude": df["longitude"],
-        "latitude": df["latitude"],
-        "altitude": df["altitude"],
-        "departement": df["departement"],
-    })
-else:
-    CSV_FILE = "stations_typiques_coordonnees.csv"
-    df = pd.read_csv(CSV_FILE, sep=",", encoding="utf-8", low_memory=False)
-    df_map = pd.DataFrame({
-        "identifiant": df["id"],
-        "nom": df["station"],
-        "longitude": df["longitude"],
-        "latitude": df["latitude"],
-        "altitude": df["altitude"],
-        "departement": df["departement"],
-    })
+csv_file = OUTPUT_DIR / f"stations_{year}.csv"
 
-df_map = df_map.dropna()
+if not csv_file.exists():
+    st.warning(f"⚠️ Aucun fichier trouvé pour l'année {year}")
+    st.stop()
+
+# ---------- CHARGEMENT DES DONNÉES ----------
+df = pd.read_csv(csv_file)
+
+# S'assurer que les colonnes nécessaires existent
+required_cols = ["station", "longitude", "latitude", "altitude", "departement", "id"]
+for col in required_cols:
+    if col not in df.columns:
+        st.error(f"Colonne manquante dans le CSV : {col}")
+        st.stop()
+
+df_map = df[required_cols].dropna()
 
 # ---------- BARRE DE RECHERCHE ----------
 st.subheader("🔎 Rechercher une station")
@@ -47,7 +44,7 @@ layer_all = pdk.Layer(
     data=df_map,
     get_position='[longitude, latitude]',
     get_radius=1000,
-    get_fill_color=[200, 30, 0, 255],
+    get_fill_color=[200, 30, 0, 255],  # opaque pour uniformité
     pickable=True,
 )
 
@@ -62,7 +59,7 @@ view_state = pdk.ViewState(
 
 # ---------- FILTRAGE ----------
 if search:
-    df_search = df_map[df_map["nom"].str.contains(search, case=False, na=False)]
+    df_search = df_map[df_map["station"].str.contains(search, case=False, na=False)]
     if not df_search.empty:
         lat = df_search.iloc[0]["latitude"]
         lon = df_search.iloc[0]["longitude"]
@@ -79,7 +76,7 @@ if search:
             data=df_search,
             get_position='[longitude, latitude]',
             get_radius=1000,
-            get_fill_color=[30, 100, 255, 200],  # 🔵 station trouvée
+            get_fill_color=[30, 100, 255, 255],  # station trouvée
             pickable=True,
         )
 
@@ -90,8 +87,8 @@ if search:
 # ---------- TOOLTIP ----------
 tooltip = {
     "html": """
-    <b>ID :</b> {identifiant} <br/>
-    <b>Nom :</b> {nom} <br/>
+    <b>ID :</b> {id} <br/>
+    <b>Nom :</b> {station} <br/>
     <b>Département :</b> {departement} <br/>
     <b>Longitude :</b> {longitude} <br/>
     <b>Latitude :</b> {latitude} <br/>
@@ -108,3 +105,4 @@ deck = pdk.Deck(
 )
 
 st.pydeck_chart(deck, height=800)
+
