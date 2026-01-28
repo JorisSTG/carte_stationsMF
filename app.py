@@ -8,7 +8,7 @@ st.title("🗺️ Carte des stations Météo-France")
 
 # ---------- CONFIG ----------
 ALL_STATIONS_FILE = Path("stations_coordonnees_tout.csv")  # CSV complet toutes stations
-BASE_DIR = Path("sortie_par_annee")                            # dossiers par année
+BASE_DIR = Path("sortie_par_annees")                            # dossiers par année
 TYPICAL_FILE = Path("stations_typiques_coordonnees.csv")       # CSV stations typiques
 
 # ---------- CHOIX DU MODE ----------
