@@ -7,28 +7,29 @@ st.set_page_config(page_title="Carte des stations", layout="wide")
 st.title("🗺️ Carte des stations Météo-France")
 
 # ---------- CONFIG ----------
-BASE_DIR = Path("sortie_par_annee")  # dossier contenant tous les CSV par année
-TYPICAL_DIR = Path("stations_typiques")  # dossier contenant stations typiques
+ALL_STATIONS_FILE = Path("stations_fichiers_coordonnees.csv")  # CSV complet toutes stations
+BASE_DIR = Path("sortie_par_annee")                            # dossiers par année
+TYPICAL_FILE = Path("stations_typiques_coordonnees.csv")       # CSV stations typiques
 
-# ---------- CHOIX DU TYPE ----------
-station_type = st.selectbox(
+# ---------- CHOIX DU MODE ----------
+mode = st.selectbox(
     "Afficher :",
-    ["Toutes les stations", "Stations typiques"]
+    ["Année spécifique", "Stations typiques", "Toutes les stations"]
 )
 
-# ---------- CHOIX DE L'ANNÉE ----------
-if station_type == "Toutes les stations":
+# ---------- CHARGEMENT DU CSV ----------
+if mode == "Année spécifique":
     year = st.selectbox("Choisir l'année :", options=list(range(2000, 2020)))
     csv_file = BASE_DIR / f"stations_{year}.csv"
-else:
-    # Pour les stations typiques, on suppose un seul CSV
-    csv_file = TYPICAL_DIR / "stations_typiques_coordonnees.csv"
+elif mode == "Stations typiques":
+    csv_file = TYPICAL_FILE
+else:  # Toutes les stations
+    csv_file = ALL_STATIONS_FILE
 
 if not csv_file.exists():
     st.warning(f"⚠️ Fichier introuvable : {csv_file}")
     st.stop()
 
-# ---------- CHARGEMENT DES DONNÉES ----------
 df = pd.read_csv(csv_file)
 
 # Colonnes attendues
@@ -111,3 +112,4 @@ deck = pdk.Deck(
 )
 
 st.pydeck_chart(deck, height=800)
+
