@@ -47,7 +47,7 @@ layer_all = pdk.Layer(
     data=df_map,
     get_position='[longitude, latitude]',
     get_radius=1000,
-    get_fill_color=[200, 30, 0, 120],
+    get_fill_color=[200, 30, 0, 255],
     pickable=True,
 )
 
