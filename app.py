@@ -6,17 +6,34 @@ st.set_page_config(page_title="Carte des stations", layout="wide")
 
 st.title("🗺️ Carte des stations du réseau Météo-France")
 
-# ---------- CHARGEMENT DES DONNÉES ----------
-df = pd.read_csv("stations-meteo-france.csv")
+# ---------- CHOIX DU FICHIER ----------
+csv_option = st.selectbox(
+    "Choisir le fichier des stations à afficher :",
+    ["Toutes les stations", "Stations typiques"]
+)
 
-df_map = pd.DataFrame({
-    "identifiant": df.iloc[:, 0],
-    "nom": df.iloc[:, 1],
-    "longitude": df.iloc[:, 6],
-    "latitude": df.iloc[:, 7],
-    "altitude": df.iloc[:, 8],
-    "departement": df.iloc[:, 13],
-})
+if csv_option == "Toutes les stations":
+    CSV_FILE = "stations_fichiers_coordonnees.csv"
+    df = pd.read_csv(CSV_FILE, sep=",", encoding="utf-8", low_memory=False)
+    df_map = pd.DataFrame({
+        "identifiant": df["id"],
+        "nom": df["station"],
+        "longitude": df["longitude"],
+        "latitude": df["latitude"],
+        "altitude": df["altitude"],
+        "departement": df["departement"],
+    })
+else:
+    CSV_FILE = "stations_typiques_coordonnees.csv"
+    df = pd.read_csv(CSV_FILE, sep=",", encoding="utf-8", low_memory=False)
+    df_map = pd.DataFrame({
+        "identifiant": df["id"],
+        "nom": df["station"],
+        "longitude": df["longitude"],
+        "latitude": df["latitude"],
+        "altitude": df["altitude"],
+        "departement": df["departement"],
+    })
 
 df_map = df_map.dropna()
 
@@ -24,7 +41,7 @@ df_map = df_map.dropna()
 st.subheader("🔎 Rechercher une station")
 search = st.text_input("Nom de la station :", "")
 
-# ---------- COUCHE PRINCIPALE (toutes les stations) ----------
+# ---------- COUCHE PRINCIPALE ----------
 layer_all = pdk.Layer(
     "ScatterplotLayer",
     data=df_map,
@@ -44,32 +61,31 @@ view_state = pdk.ViewState(
 )
 
 # ---------- FILTRAGE ----------
-df_search = df_map[df_map["nom"].str.contains(search, case=False, na=False)]
+if search:
+    df_search = df_map[df_map["nom"].str.contains(search, case=False, na=False)]
+    if not df_search.empty:
+        lat = df_search.iloc[0]["latitude"]
+        lon = df_search.iloc[0]["longitude"]
 
-if search and not df_search.empty:
-    lat = df_search.iloc[0]["latitude"]
-    lon = df_search.iloc[0]["longitude"]
+        view_state = pdk.ViewState(
+            latitude=lat,
+            longitude=lon,
+            zoom=9,
+            pitch=0
+        )
 
-    view_state = pdk.ViewState(
-        latitude=lat,
-        longitude=lon,
-        zoom=9,
-        pitch=0
-    )
+        layer_selected = pdk.Layer(
+            "ScatterplotLayer",
+            data=df_search,
+            get_position='[longitude, latitude]',
+            get_radius=1000,
+            get_fill_color=[30, 100, 255, 200],  # 🔵 station trouvée
+            pickable=True,
+        )
 
-    layer_selected = pdk.Layer(
-        "ScatterplotLayer",
-        data=df_search,
-        get_position='[longitude, latitude]',
-        get_radius=1000,
-        get_fill_color=[30, 100, 255, 200],  # 🔵 station trouvée
-        pickable=True,
-    )
-
-    layers.append(layer_selected)
-
-elif search:
-    st.warning("❌ Station non trouvée")
+        layers.append(layer_selected)
+    else:
+        st.warning("❌ Station non trouvée")
 
 # ---------- TOOLTIP ----------
 tooltip = {
@@ -91,4 +107,4 @@ deck = pdk.Deck(
     tooltip=tooltip,
 )
 
-st.pydeck_chart(deck, height = 800)
+st.pydeck_chart(deck, height=800)
