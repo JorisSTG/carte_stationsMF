@@ -21,7 +21,7 @@ mode = st.selectbox(
 if mode == "Année":
     year = st.selectbox("Choisir l'année :", options=list(range(2000, 2020)))
     csv_file = BASE_DIR / f"stations_{year}.csv"
-elif mode == "Typiques":
+elif mode == "Typique":
     csv_file = TYPICAL_FILE
 else:  # Toutes les stations
     csv_file = ALL_STATIONS_FILE
