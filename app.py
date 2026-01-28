@@ -33,7 +33,11 @@ if not csv_file.exists():
 df = pd.read_csv(csv_file)
 
 # Colonnes attendues
-required_cols = ["station", "longitude", "latitude", "altitude", "departement", "id"]
+if mode == "Toutes les stations":
+    required_cols = ["station", "longitude", "latitude", "altitude", "departement", "id", "annees", "typique"]
+else:
+    required_cols = ["station", "longitude", "latitude", "altitude", "departement", "id"]
+
 for col in required_cols:
     if col not in df.columns:
         st.error(f"Colonne manquante dans le CSV : {col}")
@@ -92,17 +96,32 @@ if search:
         st.warning("❌ Station non trouvée")
 
 # ---------- TOOLTIP ----------
-tooltip = {
-    "html": """
-    <b>ID :</b> {id} <br/>
-    <b>Nom :</b> {station} <br/>
-    <b>Département :</b> {departement} <br/>
-    <b>Longitude :</b> {longitude} <br/>
-    <b>Latitude :</b> {latitude} <br/>
-    <b>Altitude :</b> {altitude} m
-    """,
-    "style": {"backgroundColor": "white", "color": "black"}
-}
+if mode == "Toutes les stations":
+    tooltip = {
+        "html": """
+        <b>ID :</b> {id} <br/>
+        <b>Nom :</b> {station} <br/>
+        <b>Département :</b> {departement} <br/>
+        <b>Longitude :</b> {longitude} <br/>
+        <b>Latitude :</b> {latitude} <br/>
+        <b>Altitude :</b> {altitude} m <br/>
+        <b>Années :</b> {annees} <br/>
+        <b>Typique :</b> {typique}
+        """,
+        "style": {"backgroundColor": "white", "color": "black"}
+    }
+else:
+    tooltip = {
+        "html": """
+        <b>ID :</b> {id} <br/>
+        <b>Nom :</b> {station} <br/>
+        <b>Département :</b> {departement} <br/>
+        <b>Longitude :</b> {longitude} <br/>
+        <b>Latitude :</b> {latitude} <br/>
+        <b>Altitude :</b> {altitude} m
+        """,
+        "style": {"backgroundColor": "white", "color": "black"}
+    }
 
 # ---------- AFFICHAGE ----------
 deck = pdk.Deck(
@@ -112,4 +131,3 @@ deck = pdk.Deck(
 )
 
 st.pydeck_chart(deck, height=800)
-
