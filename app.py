@@ -86,7 +86,7 @@ if search:
             "ScatterplotLayer",
             data=df_search,
             get_position='[longitude, latitude]',
-            get_radius=1000,
+            get_radius=3000,
             get_fill_color=[30, 100, 255, 255],  # bleu opaque pour la station trouvée
             pickable=True,
         )
