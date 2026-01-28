@@ -3,29 +3,35 @@ import pandas as pd
 import pydeck as pdk
 from pathlib import Path
 
-st.set_page_config(page_title="Carte des stations par année", layout="wide")
-
-st.title("🗺️ Carte des stations Météo-France par année")
+st.set_page_config(page_title="Carte des stations", layout="wide")
+st.title("🗺️ Carte des stations Météo-France")
 
 # ---------- CONFIG ----------
-OUTPUT_DIR = Path("sortie_par_annee")
+BASE_DIR = Path("sortie_par_annee")  # dossier contenant tous les CSV par année
+TYPICAL_DIR = Path("stations_typiques")  # dossier contenant stations typiques
 
-# ---------- CHOIX DE L'ANNÉE ----------
-year = st.selectbox(
-    "Choisir l'année à afficher :",
-    options=list(range(2000, 2020))
+# ---------- CHOIX DU TYPE ----------
+station_type = st.selectbox(
+    "Afficher :",
+    ["Toutes les stations", "Stations typiques"]
 )
 
-csv_file = OUTPUT_DIR / f"stations_{year}.csv"
+# ---------- CHOIX DE L'ANNÉE ----------
+if station_type == "Toutes les stations":
+    year = st.selectbox("Choisir l'année :", options=list(range(2000, 2020)))
+    csv_file = BASE_DIR / f"stations_{year}.csv"
+else:
+    # Pour les stations typiques, on suppose un seul CSV
+    csv_file = TYPICAL_DIR / "stations_typiques_coordonnees.csv"
 
 if not csv_file.exists():
-    st.warning(f"⚠️ Aucun fichier trouvé pour l'année {year}")
+    st.warning(f"⚠️ Fichier introuvable : {csv_file}")
     st.stop()
 
 # ---------- CHARGEMENT DES DONNÉES ----------
 df = pd.read_csv(csv_file)
 
-# S'assurer que les colonnes nécessaires existent
+# Colonnes attendues
 required_cols = ["station", "longitude", "latitude", "altitude", "departement", "id"]
 for col in required_cols:
     if col not in df.columns:
@@ -44,7 +50,7 @@ layer_all = pdk.Layer(
     data=df_map,
     get_position='[longitude, latitude]',
     get_radius=1000,
-    get_fill_color=[200, 30, 0, 255],  # opaque pour uniformité
+    get_fill_color=[200, 30, 0, 255],  # rouge opaque
     pickable=True,
 )
 
@@ -76,7 +82,7 @@ if search:
             data=df_search,
             get_position='[longitude, latitude]',
             get_radius=1000,
-            get_fill_color=[30, 100, 255, 255],  # station trouvée
+            get_fill_color=[30, 100, 255, 255],  # bleu opaque pour la station trouvée
             pickable=True,
         )
 
@@ -105,4 +111,3 @@ deck = pdk.Deck(
 )
 
 st.pydeck_chart(deck, height=800)
-
